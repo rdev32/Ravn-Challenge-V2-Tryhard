@@ -92,7 +92,6 @@ model Like {
   clientId  String
   product   Product @relation(fields: [productId], references: [id])
   productId String
-  anonId    String?
 }
 
 model Order {
@@ -103,7 +102,6 @@ model Order {
   totalAmount Float
   status      Boolean     @default(false)
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
 }
 
 model OrderItem {
