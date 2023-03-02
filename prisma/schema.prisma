@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(uuid())
+  email    String   @unique
+  password String
+  role     Role     @default(ANON)
+  name     String?
+  Manager  Manager?
+  Client   Client?
+  Anon     Anon?
+}
+
+enum Role {
+  MANAGER
+  CLIENT
+  ANON
+}
+
+model Manager {
+  id       String    @id @default(uuid())
+  user     User      @relation(fields: [userId], references: [id])
+  userId   String    @unique
+  products Product[]
+}
+
+model Client {
+  id     String  @id @default(uuid())
+  user   User    @relation(fields: [userId], references: [id])
+  userId String  @unique
+  cart   Cart?
+  likes  Like[]
+  orders Order[]
+}
+
+model Anon {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  images      Image[]
+  manager     Manager     @relation(fields: [managerId], references: [id])
+  managerId   String
+  available   Boolean     @default(true)
+  CartItem    CartItem[]
+  Like        Like[]
+  OrderItem   OrderItem[]
+}
+
+model Image {
+  id        String  @id @default(uuid())
+  url       String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+}
+
+model Cart {
+  id       String     @id @default(uuid())
+  items    CartItem[]
+  client   Client     @relation(fields: [clientId], references: [id])
+  clientId String     @unique
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  cartId    String
+}
+
+model Like {
+  id        String  @id @default(uuid())
+  client    Client  @relation(fields: [clientId], references: [id])
+  clientId  String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  anonId    String?
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  client      Client      @relation(fields: [clientId], references: [id])
+  clientId    String
+  items       OrderItem[]
+  totalAmount Float
+  status      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+}
